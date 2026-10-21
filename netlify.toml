@@ -1,0 +1,9 @@
+[build]
+  command = ""
+  publish = "."
+
+[[redirects]]
+  from = "/mpesa"
+  to = "https://your-backend-api-domain.com/mpesa"
+  status = 200
+  force = true

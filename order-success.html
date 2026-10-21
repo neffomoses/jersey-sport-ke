@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Order Confirmed — Jersey Sport</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .success-page { max-width: 880px; margin: 40px auto; padding: 28px; background: rgba(255,255,255,0.03); border-radius: 16px; }
+    .order-summary { margin-top: 18px; }
+    .order-summary pre { white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <main class="content-wrapper">
+    <div class="success-page">
+      <h2>Thank you — your order was received!</h2>
+      <p>We've received your order and will contact you soon to arrange delivery. A copy has been sent to the shop owner.</p>
+      <div id="order-details" class="order-summary"></div>
+      <section class="customer-review-form-section" aria-labelledby="review-title">
+        <div class="review-header">
+          <h3 id="review-title">Share your jersey</h3>
+          <p>Tell other fans what you think. Your review will appear publicly after you submit it.</p>
+          <p><a class="button secondary" href="https://g.page/r/CVOfnd8l9EZ4ECE/review" target="_blank" rel="noopener noreferrer">Review us on Google</a></p>
+        </div>
+        <form id="customer-review-form" class="customer-review-form">
+          <div class="review-form-grid">
+            <div class="form-field">
+              <label for="review-name">Your name</label>
+              <input id="review-name" name="name" type="text" maxlength="80" required autocomplete="name" />
+            </div>
+            <div class="form-field">
+              <label for="review-email">Email (optional)</label>
+              <input id="review-email" name="email" type="email" autocomplete="email" />
+            </div>
+          </div>
+          <div class="form-field">
+            <label for="review-rating">Rating</label>
+            <select id="review-rating" name="rating" required>
+              <option value="" disabled selected>Choose a rating</option>
+              <option value="5">5 - Excellent</option>
+              <option value="4">4 - Very good</option>
+              <option value="3">3 - Good</option>
+              <option value="2">2 - Needs improvement</option>
+              <option value="1">1 - Poor</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label for="review-text">Your review</label>
+            <textarea id="review-text" name="review" maxlength="1200" required placeholder="How did the jersey fit and feel?"></textarea>
+          </div>
+          <input name="website" type="text" tabindex="-1" autocomplete="off" class="review-honeypot" aria-hidden="true" />
+          <p id="review-feedback" class="order-feedback" aria-live="polite"></p>
+          <button type="submit" class="button primary">Submit review</button>
+        </form>
+      </section>
+      <div style="margin-top:18px; display:flex; gap:12px;">
+        <a href="index.html" class="button primary">Back to Shop</a>
+        <button id="clear-order-preview" class="button secondary">Clear Preview</button>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    (function(){
+      const el = document.getElementById('order-details');
+      const raw = localStorage.getItem('jersey_sport_last_order');
+      if (!raw) {
+        el.innerHTML = '<p>No recent order found.</p>';
+      } else try {
+        const data = JSON.parse(raw);
+        let html = '<p><strong>Name:</strong> ' + (data.customer_name || '—') + '</p>';
+        html += '<p><strong>Email:</strong> ' + (data.customer_email || '—') + '</p>';
+        html += '<p><strong>Phone:</strong> ' + (data.customer_phone || '—') + '</p>';
+        html += '<p><strong>Delivery Notes:</strong><br>' + (data.delivery_notes || '—') + '</p>';
+        html += '<h3>Items</h3>';
+        
+        
+
+        
+        if (Array.isArray(data.items) && data.items.length) {
+          html += '<ul>' + data.items.map(it => '<li>' + (it.name || it.id || 'Item') + ' — Qty: ' + (it.qty || 1) + (it.size ? ' — Size: ' + it.size : '') + ' — ' + (it.unit_price_display || ('KSH ' + (it.unit_price || it.price || 0))) + '</li>').join('') + '</ul>';
+        } else {
+          html += '<pre>' + (typeof data.items === 'string' ? data.items : JSON.stringify(data.items, null, 2)) + '</pre>';
+        }
+        html += '<p><strong>Total:</strong> KSH ' + (data.total || '0') + '</p>';
+        el.innerHTML = html;
+      } catch (e) {
+        el.innerHTML = '<pre>' + (raw || '') + '</pre>';
+      }
+
+      document.getElementById('clear-order-preview').addEventListener('click', ()=>{
+        localStorage.removeItem('jersey_sport_last_order');
+        location.href = 'index.html';
+      });
+
+      const reviewForm = document.getElementById('customer-review-form');
+      const reviewFeedback = document.getElementById('review-feedback');
+      reviewForm?.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const submitButton = reviewForm.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+        reviewFeedback.textContent = 'Submitting your review...';
+        reviewFeedback.style.color = '';
+        try {
+          const response = await fetch('api/reviews.php', { method: 'POST', body: new FormData(reviewForm) });
+          const result = await response.json().catch(() => ({}));
+          if (!response.ok || !result.success) throw new Error(result.message || 'The review could not be submitted.');
+          reviewFeedback.textContent = result.message;
+          reviewFeedback.style.color = '#25d366';
+          reviewForm.reset();
+        } catch (error) {
+          reviewFeedback.textContent = error.message || 'The review could not be submitted. Make sure this page is running on a PHP-enabled web server.';
+          reviewFeedback.style.color = '#ff8f87';
+        } finally {
+          submitButton.disabled = false;
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

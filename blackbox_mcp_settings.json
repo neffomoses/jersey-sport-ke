@@ -1,0 +1,39 @@
+<<<<<<< HEAD
+{
+  "servers": [
+    {
+      "name": "github.com/postmanlabs/postman-mcp-server",
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@postman/postman-mcp-server",
+        "--minimal",
+        "--region",
+        "us"
+      ],
+      "env": {}
+    }
+  ]
+}
+
+=======
+{
+  "servers": [
+    {
+      "name": "github.com/postmanlabs/postman-mcp-server",
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@postman/postman-mcp-server",
+        "--minimal",
+        "--region",
+        "us"
+      ],
+      "env": {}
+    }
+  ]
+}
+
+>>>>>>> f17c75c (Add website files and netlify config)

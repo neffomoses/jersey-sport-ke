@@ -1,0 +1,17 @@
+<<<<<<< HEAD
+{
+  "name": "jersey-sport/email-smtp",
+  "description": "Add PHPMailer SMTP support for order notifications",
+  "require": {
+    "phpmailer/phpmailer": "^6.8"
+  }
+}
+=======
+{
+  "name": "jersey-sport/email-smtp",
+  "description": "Add PHPMailer SMTP support for order notifications",
+  "require": {
+    "phpmailer/phpmailer": "^6.8"
+  }
+}
+>>>>>>> f17c75c (Add website files and netlify config)

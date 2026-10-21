@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jersey Sporty Sport | Orders Dashboard</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, sans-serif;
+      background: #081b12;
+      color: #f7f7f2;
+    }
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 24px; }
+    header { display:flex; align-items:center; justify-content:space-between; gap: 14px; flex-wrap:wrap; margin-bottom: 18px; }
+    h1 { font-size: 1.35rem; margin: 0; color: #f8b229; }
+    .pill {
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.10);
+      color: rgba(255,255,255,0.85);
+      font-weight: 600;
+    }
+    table { width: 100%; border-collapse: collapse; overflow:hidden; border-radius: 12px; }
+    th, td { padding: 12px 10px; border-bottom: 1px solid rgba(255,255,255,0.08); vertical-align: top; }
+    th { text-align:left; color: rgba(255,255,255,0.9); font-weight: 800; }
+    tr:hover td { background: rgba(255,255,255,0.03); }
+    .muted { color: rgba(255,255,255,0.7); font-size: 0.92rem; }
+    .small { font-size: 0.9rem; }
+    textarea { width: 100%; min-height: 48px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12); color: #f7f7f2; border-radius: 10px; padding: 10px; }
+    .top-actions { display:flex; gap: 10px; flex-wrap:wrap; align-items:center; }
+    input { padding: 10px 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.04); color: #f7f7f2; }
+    button {
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(248,178,41,0.25);
+      background: rgba(248,178,41,0.12);
+      color: #ffd873;
+      font-weight: 800;
+      cursor:pointer;
+    }
+    .status { margin: 14px 0; padding: 12px 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.10); background: rgba(255,255,255,0.03); }
+    .status.ok { border-color: rgba(122,231,199,0.22); color: #7ae7c7; }
+    .status.err { border-color: rgba(255,95,87,0.22); color: #ff5f57; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Orders Dashboard</h1>
+      <div class="top-actions">
+        <span class="pill">Protected by token</span>
+        <input id="token" type="password" placeholder="Enter ORDERS_API_TOKEN" style="min-width: 260px" />
+        <button id="loadBtn" type="button">Load orders</button>
+        <button id="copyLink" type="button" style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.12); color: rgba(255,255,255,0.85);">Copy link</button>
+      </div>
+    </header>
+
+    <div id="status" class="status muted">Enter your token and click “Load orders”.</div>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width:60px">ID</th>
+          <th>Customer</th>
+          <th style="width:220px">Contact</th>
+          <th style="width:200px">Total</th>
+          <th style="width:320px">Items</th>
+          <th style="width:320px">Message</th>
+          <th style="width:170px">Created</th>
+        </tr>
+      </thead>
+      <tbody id="tbody">
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    const tbody = document.getElementById('tbody');
+    const statusEl = document.getElementById('status');
+    const tokenEl = document.getElementById('token');
+    const loadBtn = document.getElementById('loadBtn');
+    const copyLinkBtn = document.getElementById('copyLink');
+
+    function setStatus(kind, msg) {
+      statusEl.className = 'status ' + (kind === 'ok' ? 'ok' : (kind === 'err' ? 'err' : ''));
+      statusEl.textContent = msg;
+    }
+
+    function renderOrder(o) {
+      const items = Array.isArray(o.items) ? o.items : null;
+      const itemsText = items
+        ? items.map(x => `${x.name} x${x.qty} (${x.price})`).join('\n')
+        : (o.items_raw || '');
+
+      return `
+        <tr>
+          <td class="small"><strong>${o.id}</strong></td>
+          <td>
+            <div><strong>${escapeHtml(o.customer_name || '')}</strong></div>
+            <div class="muted">${escapeHtml(o.email || '')}</div>
+          </td>
+          <td>
+            <div class="small">Phone: ${escapeHtml(o.phone || '')}</div>
+            <div class="small">Email: ${escapeHtml(o.email || '')}</div>
+          </td>
+          <td><strong style="color:#ffd873">${escapeHtml(o.total || '')}</strong></td>
+          <td>
+            <textarea readonly>${escapeHtml(itemsText)}</textarea>
+          </td>
+          <td>
+            <div class="small">${escapeHtml(o.message || '')}</div>
+          </td>
+          <td class="muted">${escapeHtml(o.created_at || '')}</td>
+        </tr>
+      `;
+    }
+
+    function escapeHtml(s) {
+      return String(s ?? '')
+        .replaceAll('&','&amp;')
+.replaceAll('<','<')
+        .replaceAll('>','>')
+        .replaceAll('"','"');
+    }
+
+    async function loadOrders() {
+      const token = tokenEl.value.trim();
+      if (!token) {
+        setStatus('err', 'Token is required.');
+        return;
+      }
+
+      setStatus('','Loading...');
+      tbody.innerHTML = '';
+
+      try {
+        const url = `api/orders.php?token=${encodeURIComponent(token)}`;
+        const res = await fetch(url, { method: 'GET' });
+        const data = await res.json();
+        if (!data.success) {
+          setStatus('err', data.message || 'Failed to load orders');
+          return;
+        }
+        const orders = data.orders || [];
+        setStatus('ok', `Loaded ${orders.length} orders.`);
+        tbody.innerHTML = orders.map(renderOrder).join('');
+      } catch (e) {
+        setStatus('err', 'Request failed: ' + e.message);
+      }
+    }
+
+    loadBtn.addEventListener('click', loadOrders);
+
+    copyLinkBtn.addEventListener('click', async () => {
+      const token = tokenEl.value.trim();
+      if (!token) {
+        setStatus('err', 'Enter token first.');
+        return;
+      }
+      const link = `${location.origin}${location.pathname.replace(/\\/?orders\.html.*$/, '')}api/orders.php?token=${encodeURIComponent(token)}`;
+      try {
+        await navigator.clipboard.writeText(link);
+        setStatus('ok', 'API link copied.');
+      } catch {
+        setStatus('err', 'Could not copy link.');
+      }
+    });
+
+    // Auto-load if token in query string
+    const urlParams = new URLSearchParams(location.search);
+    const tokenQ = urlParams.get('token');
+    if (tokenQ) {
+      tokenEl.value = tokenQ;
+      loadOrders();
+    }
+  </script>
+</body>
+</html>
+

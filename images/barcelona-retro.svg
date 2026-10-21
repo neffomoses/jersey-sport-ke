@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 450">
+  <rect width="360" height="450" rx="28" fill="#081b12" />
+  <rect x="40" y="60" width="280" height="330" rx="24" fill="#86122B" />
+  <text x="180" y="240" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="22" fill="#ffe7a0" font-weight="800">BARCELONA</text>
+  <text x="180" y="280" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#ffe7a0">RETRO</text>
+</svg>

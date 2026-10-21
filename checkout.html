@@ -1,0 +1,867 @@
+<<<<<<< HEAD
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jersey Shop & Checkout</title>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script type="text/javascript">
+        (function() {
+            // Public key used elsewhere in this project (see index.html)
+            emailjs.init("rD_zIFqWZwGhcu-jY");
+        })();
+    </script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .shop-container {
+            display: flex;
+            flex-wrap: wrap;
+            max-width: 1100px;
+            margin: 0 auto;
+            gap: 30px;
+        }
+        .products-section, .cart-checkout-section {
+            flex: 1;
+            min-width: 320px;
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+        }
+        h2 {
+            border-bottom: 2px solid #eaeaea;
+            padding-bottom: 10px;
+            color: #222;
+            margin-top: 0;
+        }
+        .jersey-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border: 1px solid #eef0f2;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .jersey-details h3 {
+            margin: 0 0 8px 0;
+            font-size: 16px;
+        }
+        .size-select {
+            padding: 10px 14px;
+            border-radius: 999px;
+            border: 1px solid rgba(0, 123, 255, 0.25);
+            font-size: 14px;
+            background: rgba(0, 123, 255, 0.06);
+            cursor: pointer;
+            outline: none;
+        }
+        .size-select:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.14);
+            background: rgba(0, 123, 255, 0.10);
+        }
+        .add-to-cart-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 7px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s ease;
+        }
+        .add-to-cart-btn:hover {
+            background-color: #0056b3;
+        }
+        .cart-item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f1f1f1;
+        }
+        .remove-jersey-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: background 0.2s ease;
+        }
+        .remove-jersey-btn:hover {
+            background-color: #c82333;
+        }
+        .empty-message {
+            color: #888;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .form-field {
+            margin-top: 15px;
+        }
+        .form-field label {
+            display: block;
+            margin-bottom: 7px;
+            font-weight: 600;
+            font-size: 14px;
+            color: #444;
+        }
+        .form-field input, .form-field textarea {
+            width: 100%;
+            padding: 11px 12px;
+            border: 1px solid #ccc;
+            border-radius: 7px;
+            box-sizing: border-box;
+            font-size: 15px;
+            font-family: inherit;
+        }
+        .form-field input:focus, .form-field textarea:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.12);
+        }
+        .checkout-submit-btn {
+            width: 100%;
+            padding: 14px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 22px;
+            transition: background 0.2s ease;
+        }
+        .checkout-submit-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .checkout-submit-btn:hover:not(:disabled) {
+            background-color: #218838;
+        }
+        .message-banner {
+            margin-top: 20px;
+            padding: 14px 16px;
+            border-radius: 8px;
+            display: none;
+        }
+        .message-banner.success {
+            background: #e6ffed;
+            color: #166534;
+            border: 1px solid #a7f3d0;
+        }
+        .message-banner.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+        .summary-label {
+            margin-bottom: 10px;
+            color: #555;
+            font-size: 14px;
+        }
+        @media (max-width: 860px) {
+            .shop-container {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="shop-container">
+        <div class="products-section">
+            <h2>Available Jerseys</h2>
+
+            <div class="jersey-card" data-name="Arsenal Home 26/27" data-price="1300">
+                <div class="jersey-details">
+                    <h3>Arsenal Home 26/27</h3>
+                    <label>Size:</label>
+                    <select class="size-select">
+                        <option value="S">S</option>
+                        <option value="M">M</option>
+                        <option value="L">L</option>
+                        <option value="XL">XL</option>
+                    </select>
+                </div>
+                <button class="add-to-cart-btn" onclick="handleAddingProduct(this)">Add to Cart</button>
+            </div>
+
+            <div class="jersey-card" data-name="Real Madrid Away 26/27" data-price="1300">
+                <div class="jersey-details">
+                    <h3>Real Madrid Away 26/27</h3>
+                    <label>Size:</label>
+                    <select class="size-select">
+                        <option value="S">S</option>
+                        <option value="M">M</option>
+                        <option value="L">L</option>
+                        <option value="XL">XL</option>
+                    </select>
+                </div>
+                <button class="add-to-cart-btn" onclick="handleAddingProduct(this)">Add to Cart</button>
+            </div>
+            
+            <div class="jersey-card" data-name="PSG Home 26/27" data-price="1800">
+                <div class="jersey-details">
+                    <h3>PSG Home 26/27</h3>
+                    <label>Size:</label>
+                    <select class="size-select">
+                        <option value="S">S</option>
+                        <option value="M">M</option>
+                        <option value="L">L</option>
+                        <option value="XL">XL</option>
+                    </select>
+                </div>
+                <button class="add-to-cart-btn" onclick="handleAddingProduct(this)">Add to Cart</button>
+            </div>
+        </div>
+
+        <div class="cart-checkout-section">
+            <h2>Your Order Details</h2>
+            <div class="summary-label">Cart items will appear below. The order button becomes active once you add at least one jersey.</div>
+            
+            <div id="cart-display-list">
+                <p class="empty-message">Your cart is empty.</p>
+            </div>
+
+            <form id="orderForm" onsubmit="sendOrderEmail(event)">
+                <div class="form-field">
+                    <label for="customer_name">Customer Name:</label>
+                    <input type="text" id="customer_name" required>
+                </div>
+
+                <div class="form-field">
+                    <label for="phone_number">Phone Number:</label>
+                    <input type="tel" id="phone_number" required>
+                </div>
+
+                <div class="form-field">
+                    <label for="customer_email">Email Address:</label>
+                    <input type="email" id="customer_email" required>
+                </div>
+
+                <div class="form-field">
+                    <label for="delivery_notes">Delivery Notes:</label>
+                    <textarea id="delivery_notes" rows="3" placeholder="Any specific delivery instructions..."></textarea>
+                </div>
+
+                <button type="submit" class="checkout-submit-btn" disabled>Place Order</button>
+            </form>
+
+            <div id="form-message" class="message-banner"></div>
+        </div>
+    </div>
+
+    <script>
+        let cart = [];
+
+        function handleAddingProduct(buttonElement) {
+            const card = buttonElement.closest('.jersey-card');
+            if (!card) return;
+            const jerseyName = card.getAttribute('data-name');
+            const jerseyPrice = card.getAttribute('data-price');
+            const selectedSize = card.querySelector('.size-select').value;
+            addToCart(jerseyName, selectedSize, jerseyPrice);
+        }
+
+        function addToCart(jerseyName, selectedSize, jerseyPrice) {
+            cart.push({ name: `${jerseyName} (${selectedSize})`, units: 1, price: Number(jerseyPrice || 0), image_url: "https://via.placeholder.com/64" });
+            displayCart();
+        }
+
+        function removeJersey(index) {
+            cart.splice(index, 1);
+            displayCart();
+        }
+
+        function displayCart() {
+            const listContainer = document.getElementById('cart-display-list');
+            const form = document.getElementById('orderForm');
+            const submitBtn = form ? form.querySelector('button[type="submit"]') : null;
+
+            listContainer.innerHTML = '';
+
+            if (cart.length === 0) {
+                listContainer.innerHTML = '<p class="empty-message">Your cart is empty.</p>';
+                if (submitBtn) submitBtn.disabled = true;
+                return;
+            }
+
+            if (submitBtn) submitBtn.disabled = false;
+
+            cart.forEach((jersey, index) => {
+                const row = document.createElement('div');
+                row.className = 'cart-item-row';
+                const price = Number(jersey.price || 0);
+                const priceText = price ? `KES ${price.toLocaleString()}` : 'KES -';
+
+                row.innerHTML = `
+                    <div>
+                      <strong>${escapeHtml(jersey.name)}</strong>
+                      <div style="color:#666; font-size: 13px; margin-top:4px">${priceText}</div>
+                    </div>
+                    <button type="button" class="remove-jersey-btn" onclick="removeJersey(${index})">Remove</button>
+                `;
+                listContainer.appendChild(row);
+            });
+        }
+
+        function escapeHtml(text) {
+            return String(text)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '<')
+                .replace(/>/g, '>')
+                .replace(/"/g, '"')
+                .replace(/'/g, '&#039;');
+        }
+
+        function sendOrderEmail(event) {
+            event.preventDefault();
+
+            const submitBtn = document.querySelector('.checkout-submit-btn');
+            const messageBanner = document.getElementById('form-message');
+
+            if (cart.length === 0) {
+                messageBanner.textContent = 'Please add at least one jersey to your cart before placing an order.';
+                messageBanner.className = 'message-banner error';
+                messageBanner.style.display = 'block';
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Sending order...';
+            messageBanner.style.display = 'none';
+
+            let subtotal = cart.reduce((sum, item) => sum + item.price, 0);
+            let shippingCost = 250; 
+            let totalCost = subtotal + shippingCost;
+
+            let generatedOrderId = Math.floor(10000 + Math.random() * 90000);
+
+            const templateParams = {
+                order_id: generatedOrderId,
+                customer_name: document.getElementById('customer_name').value,
+                customer_phone: document.getElementById('phone_number').value,
+                customer_email: document.getElementById('customer_email').value,
+                delivery_notes: document.getElementById('delivery_notes').value || "None provided",
+                email: document.getElementById('customer_email').value,
+                orders: cart, 
+                cost: {
+                    shipping: shippingCost.toLocaleString(),
+                    tax: "0",
+                    total: totalCost.toLocaleString()
+                }
+            };
+
+            // 1) Persist order via backend (submit_order.php)
+            const backendUrl = 'submit_order.php';
+            const itemsJson = JSON.stringify(
+                cart.map((it) => ({
+                    name: it.name,
+                    units: Number(it.units || 1),
+                    price: Number(it.price || 0)
+                }))
+            );
+
+            const backendBody = new URLSearchParams();
+            backendBody.set('name', templateParams.customer_name);
+            backendBody.set('email', templateParams.customer_email);
+            backendBody.set('phone', templateParams.customer_phone);
+            backendBody.set('message', templateParams.delivery_notes);
+            backendBody.set('items', itemsJson);
+            backendBody.set('total', totalCost);
+
+            const persistPromise = fetch(backendUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+                body: backendBody.toString()
+            })
+                .then(async (res) => {
+                    const contentType = res.headers.get('content-type') || '';
+                    if (contentType.includes('application/json')) {
+                        return res.json();
+                    }
+                    return { success: res.ok };
+                })
+                .catch((err) => {
+                    console.error('Backend persist error:', err);
+                    return { success: false };
+                });
+
+            // 2) Best-effort email via EmailJS
+            const emailPromise = emailjs.send('service_6zr51e3', 'template_52wwywj', templateParams)
+                .catch((err) => {
+                    console.error('EmailJS Error:', err);
+                    return { success: false };
+                });
+
+            Promise.all([persistPromise, emailPromise]).then(([persistResult]) => {
+                // persistResult.success is the most important gate for clearing cart
+                if (persistResult && persistResult.success) {
+                    messageBanner.textContent = '✅ Order saved successfully. Email notification was sent (or attempted).';
+                    messageBanner.className = 'message-banner success';
+                    messageBanner.style.display = 'block';
+
+                    cart = [];
+                    document.getElementById('orderForm').reset();
+                    displayCart();
+                } else {
+                    messageBanner.textContent = '⚠️ Order could not be saved to the server. Email was attempted, but please try again.';
+                    messageBanner.className = 'message-banner error';
+                    messageBanner.style.display = 'block';
+                }
+
+                submitBtn.textContent = 'Place Order';
+                submitBtn.disabled = false;
+            });
+        }
+
+        displayCart();
+    </script>
+</body>
+</html>
+
+=======
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jersey Shop & Checkout</title>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script type="text/javascript">
+        (function() {
+            // Public key used elsewhere in this project (see index.html)
+            emailjs.init("rD_zIFqWZwGhcu-jY");
+        })();
+    </script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .shop-container {
+            display: flex;
+            flex-wrap: wrap;
+            max-width: 1100px;
+            margin: 0 auto;
+            gap: 30px;
+        }
+        .products-section, .cart-checkout-section {
+            flex: 1;
+            min-width: 320px;
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+        }
+        h2 {
+            border-bottom: 2px solid #eaeaea;
+            padding-bottom: 10px;
+            color: #222;
+            margin-top: 0;
+        }
+        .jersey-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border: 1px solid #eef0f2;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .jersey-details h3 {
+            margin: 0 0 8px 0;
+            font-size: 16px;
+        }
+        .size-select {
+            padding: 10px 14px;
+            border-radius: 999px;
+            border: 1px solid rgba(0, 123, 255, 0.25);
+            font-size: 14px;
+            background: rgba(0, 123, 255, 0.06);
+            cursor: pointer;
+            outline: none;
+        }
+        .size-select:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.14);
+            background: rgba(0, 123, 255, 0.10);
+        }
+        .add-to-cart-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 7px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s ease;
+        }
+        .add-to-cart-btn:hover {
+            background-color: #0056b3;
+        }
+        .cart-item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f1f1f1;
+        }
+        .remove-jersey-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: background 0.2s ease;
+        }
+        .remove-jersey-btn:hover {
+            background-color: #c82333;
+        }
+        .empty-message {
+            color: #888;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .form-field {
+            margin-top: 15px;
+        }
+        .form-field label {
+            display: block;
+            margin-bottom: 7px;
+            font-weight: 600;
+            font-size: 14px;
+            color: #444;
+        }
+        .form-field input, .form-field textarea {
+            width: 100%;
+            padding: 11px 12px;
+            border: 1px solid #ccc;
+            border-radius: 7px;
+            box-sizing: border-box;
+            font-size: 15px;
+            font-family: inherit;
+        }
+        .form-field input:focus, .form-field textarea:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.12);
+        }
+        .checkout-submit-btn {
+            width: 100%;
+            padding: 14px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 22px;
+            transition: background 0.2s ease;
+        }
+        .checkout-submit-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .checkout-submit-btn:hover:not(:disabled) {
+            background-color: #218838;
+        }
+        .message-banner {
+            margin-top: 20px;
+            padding: 14px 16px;
+            border-radius: 8px;
+            display: none;
+        }
+        .message-banner.success {
+            background: #e6ffed;
+            color: #166534;
+            border: 1px solid #a7f3d0;
+        }
+        .message-banner.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+        .summary-label {
+            margin-bottom: 10px;
+            color: #555;
+            font-size: 14px;
+        }
+        @media (max-width: 860px) {
+            .shop-container {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="shop-container">
+        <div class="products-section">
+            <h2>Available Jerseys</h2>
+
+            <div class="jersey-card" data-name="Arsenal Home 26/27" data-price="1300">
+                <div class="jersey-details">
+                    <h3>Arsenal Home 26/27</h3>
+                    <label>Size:</label>
+                    <select class="size-select">
+                        <option value="S">S</option>
+                        <option value="M">M</option>
+                        <option value="L">L</option>
+                        <option value="XL">XL</option>
+                    </select>
+                </div>
+                <button class="add-to-cart-btn" onclick="handleAddingProduct(this)">Add to Cart</button>
+            </div>
+
+            <div class="jersey-card" data-name="Real Madrid Away 26/27" data-price="1300">
+                <div class="jersey-details">
+                    <h3>Real Madrid Away 26/27</h3>
+                    <label>Size:</label>
+                    <select class="size-select">
+                        <option value="S">S</option>
+                        <option value="M">M</option>
+                        <option value="L">L</option>
+                        <option value="XL">XL</option>
+                    </select>
+                </div>
+                <button class="add-to-cart-btn" onclick="handleAddingProduct(this)">Add to Cart</button>
+            </div>
+            
+            <div class="jersey-card" data-name="PSG Home 26/27" data-price="1800">
+                <div class="jersey-details">
+                    <h3>PSG Home 26/27</h3>
+                    <label>Size:</label>
+                    <select class="size-select">
+                        <option value="S">S</option>
+                        <option value="M">M</option>
+                        <option value="L">L</option>
+                        <option value="XL">XL</option>
+                    </select>
+                </div>
+                <button class="add-to-cart-btn" onclick="handleAddingProduct(this)">Add to Cart</button>
+            </div>
+        </div>
+
+        <div class="cart-checkout-section">
+            <h2>Your Order Details</h2>
+            <div class="summary-label">Cart items will appear below. The order button becomes active once you add at least one jersey.</div>
+            
+            <div id="cart-display-list">
+                <p class="empty-message">Your cart is empty.</p>
+            </div>
+
+            <form id="orderForm" onsubmit="sendOrderEmail(event)">
+                <div class="form-field">
+                    <label for="customer_name">Customer Name:</label>
+                    <input type="text" id="customer_name" required>
+                </div>
+
+                <div class="form-field">
+                    <label for="phone_number">Phone Number:</label>
+                    <input type="tel" id="phone_number" required>
+                </div>
+
+                <div class="form-field">
+                    <label for="customer_email">Email Address:</label>
+                    <input type="email" id="customer_email" required>
+                </div>
+
+                <div class="form-field">
+                    <label for="delivery_notes">Delivery Notes:</label>
+                    <textarea id="delivery_notes" rows="3" placeholder="Any specific delivery instructions..."></textarea>
+                </div>
+
+                <button type="submit" class="checkout-submit-btn" disabled>Place Order</button>
+            </form>
+
+            <div id="form-message" class="message-banner"></div>
+        </div>
+    </div>
+
+    <script>
+        let cart = [];
+
+        function handleAddingProduct(buttonElement) {
+            const card = buttonElement.closest('.jersey-card');
+            if (!card) return;
+            const jerseyName = card.getAttribute('data-name');
+            const jerseyPrice = card.getAttribute('data-price');
+            const selectedSize = card.querySelector('.size-select').value;
+            addToCart(jerseyName, selectedSize, jerseyPrice);
+        }
+
+        function addToCart(jerseyName, selectedSize, jerseyPrice) {
+            cart.push({ name: `${jerseyName} (${selectedSize})`, units: 1, price: Number(jerseyPrice || 0), image_url: "https://via.placeholder.com/64" });
+            displayCart();
+        }
+
+        function removeJersey(index) {
+            cart.splice(index, 1);
+            displayCart();
+        }
+
+        function displayCart() {
+            const listContainer = document.getElementById('cart-display-list');
+            const form = document.getElementById('orderForm');
+            const submitBtn = form ? form.querySelector('button[type="submit"]') : null;
+
+            listContainer.innerHTML = '';
+
+            if (cart.length === 0) {
+                listContainer.innerHTML = '<p class="empty-message">Your cart is empty.</p>';
+                if (submitBtn) submitBtn.disabled = true;
+                return;
+            }
+
+            if (submitBtn) submitBtn.disabled = false;
+
+            cart.forEach((jersey, index) => {
+                const row = document.createElement('div');
+                row.className = 'cart-item-row';
+                const price = Number(jersey.price || 0);
+                const priceText = price ? `KES ${price.toLocaleString()}` : 'KES -';
+
+                row.innerHTML = `
+                    <div>
+                      <strong>${escapeHtml(jersey.name)}</strong>
+                      <div style="color:#666; font-size: 13px; margin-top:4px">${priceText}</div>
+                    </div>
+                    <button type="button" class="remove-jersey-btn" onclick="removeJersey(${index})">Remove</button>
+                `;
+                listContainer.appendChild(row);
+            });
+        }
+
+        function escapeHtml(text) {
+            return String(text)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '<')
+                .replace(/>/g, '>')
+                .replace(/"/g, '"')
+                .replace(/'/g, '&#039;');
+        }
+
+        function sendOrderEmail(event) {
+            event.preventDefault();
+
+            const submitBtn = document.querySelector('.checkout-submit-btn');
+            const messageBanner = document.getElementById('form-message');
+
+            if (cart.length === 0) {
+                messageBanner.textContent = 'Please add at least one jersey to your cart before placing an order.';
+                messageBanner.className = 'message-banner error';
+                messageBanner.style.display = 'block';
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Sending order...';
+            messageBanner.style.display = 'none';
+
+            let subtotal = cart.reduce((sum, item) => sum + item.price, 0);
+            let shippingCost = 250; 
+            let totalCost = subtotal + shippingCost;
+
+            let generatedOrderId = Math.floor(10000 + Math.random() * 90000);
+
+            const templateParams = {
+                order_id: generatedOrderId,
+                customer_name: document.getElementById('customer_name').value,
+                customer_phone: document.getElementById('phone_number').value,
+                customer_email: document.getElementById('customer_email').value,
+                delivery_notes: document.getElementById('delivery_notes').value || "None provided",
+                email: document.getElementById('customer_email').value,
+                orders: cart, 
+                cost: {
+                    shipping: shippingCost.toLocaleString(),
+                    tax: "0",
+                    total: totalCost.toLocaleString()
+                }
+            };
+
+            // 1) Persist order via backend (submit_order.php)
+            const backendUrl = 'submit_order.php';
+            const itemsJson = JSON.stringify(
+                cart.map((it) => ({
+                    name: it.name,
+                    units: Number(it.units || 1),
+                    price: Number(it.price || 0)
+                }))
+            );
+
+            const backendBody = new URLSearchParams();
+            backendBody.set('name', templateParams.customer_name);
+            backendBody.set('email', templateParams.customer_email);
+            backendBody.set('phone', templateParams.customer_phone);
+            backendBody.set('message', templateParams.delivery_notes);
+            backendBody.set('items', itemsJson);
+            backendBody.set('total', totalCost);
+
+            const persistPromise = fetch(backendUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+                body: backendBody.toString()
+            })
+                .then(async (res) => {
+                    const contentType = res.headers.get('content-type') || '';
+                    if (contentType.includes('application/json')) {
+                        return res.json();
+                    }
+                    return { success: res.ok };
+                })
+                .catch((err) => {
+                    console.error('Backend persist error:', err);
+                    return { success: false };
+                });
+
+            // 2) Best-effort email via EmailJS
+            const emailPromise = emailjs.send('service_6zr51e3', 'template_52wwywj', templateParams)
+                .catch((err) => {
+                    console.error('EmailJS Error:', err);
+                    return { success: false };
+                });
+
+            Promise.all([persistPromise, emailPromise]).then(([persistResult]) => {
+                // persistResult.success is the most important gate for clearing cart
+                if (persistResult && persistResult.success) {
+                    messageBanner.textContent = '✅ Order saved successfully. Email notification was sent (or attempted).';
+                    messageBanner.className = 'message-banner success';
+                    messageBanner.style.display = 'block';
+
+                    cart = [];
+                    document.getElementById('orderForm').reset();
+                    displayCart();
+                } else {
+                    messageBanner.textContent = '⚠️ Order could not be saved to the server. Email was attempted, but please try again.';
+                    messageBanner.className = 'message-banner error';
+                    messageBanner.style.display = 'block';
+                }
+
+                submitBtn.textContent = 'Place Order';
+                submitBtn.disabled = false;
+            });
+        }
+
+        displayCart();
+    </script>
+</body>
+</html>
+
+>>>>>>> f17c75c (Add website files and netlify config)
