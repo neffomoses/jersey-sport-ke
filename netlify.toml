@@ -1,9 +1,8 @@
 [build]
-  command = ""
   publish = "."
 
 [[redirects]]
   from = "/mpesa"
-  to = "https://your-backend-api-domain.com/mpesa"
+  to = "https://jersey-sport-ke.onrender.com/mpesa"
   status = 200
   force = true
