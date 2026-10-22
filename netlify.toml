@@ -6,3 +6,9 @@
   to = "https://jersey-sport-ke.onrender.com/mpesa"
   status = 200
   force = true
+
+[[redirects]]
+  from = "/callback"
+  to = "https://jersey-sport-ke.onrender.com/callback"
+  status = 200
+  force = true

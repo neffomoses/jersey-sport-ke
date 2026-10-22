@@ -119,11 +119,14 @@ MPESA_ENV=sandbox
 MPESA_CONSUMER_KEY=your_daraja_consumer_key
 MPESA_CONSUMER_SECRET=your_daraja_consumer_secret
 MPESA_SHORTCODE=174379
+MPESA_TILL_NUMBER=1840947
 MPESA_PASSKEY=your_sandbox_passkey
 MPESA_CALLBACK_URL=https://your-public-https-url/api/mpesa_callback.php
 ```
 
-The callback URL must be publicly reachable over HTTPS; `localhost` will not receive Safaricom callbacks. The frontend sends checkout requests to `/.netlify/functions/mpesa`. For local development against the Express STK service, set `window.MPESA_API_URL` to `http://localhost:3000/api/stk-push`.
+The Express service uses the Buy Goods transaction type, rounds the submitted amount to an integer, and uses the configured Till as `PartyB` (default `1840947`). `MPESA_SHORTCODE` must be the business shortcode used with your passkey.
+
+Set `MPESA_ENV=production` when using production Daraja credentials; keep it set to `sandbox` while testing. The callback URL must be publicly reachable over HTTPS; `localhost` will not receive Safaricom callbacks. The checkout frontend posts to `/mpesa`; the Express service also accepts `/api/mpesa` and `/api/stk-push`.
 
 When deploying the storefront to Netlify, configure the `MPESA_*` credentials as Netlify environment variables, including a public HTTPS callback URL. The checkout handler accepts both the Netlify function's `{ success, data }` response and a raw Daraja response.
 >>>>>>> f17c75c (Add website files and netlify config)
